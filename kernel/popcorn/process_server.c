@@ -124,6 +124,7 @@ void free_remote_context(struct remote_context *rc)
 
 static struct remote_context *__alloc_remote_context(int nid, int tgid, bool remote)
 {
+	PSPRINTK("ADDED: [%s] In *__alloc_remote_context\n", __func__);
 	struct remote_context *rc = kmalloc(sizeof(*rc), GFP_KERNEL);
 	int i;
 
@@ -131,10 +132,13 @@ static struct remote_context *__alloc_remote_context(int nid, int tgid, bool rem
 
 	INIT_LIST_HEAD(&rc->list);
 	atomic_set(&rc->count, 1); /* Account for mm->remote in a near future */
+	PSPRINTK("ADDED: [%s] *rc->count: %d\n", __func__, rc->count);
 	rc->mm = NULL;
 
 	rc->tgid = tgid;
 	rc->for_remote = remote;
+	PSPRINTK("ADDED: [%s] rc->tgid: %d, rc->dor_remote: %d\n"
+		, __func__, rc->tgid, rc->for_remote);
 	rc->sigpending = 0;
 
 	for (i = 0; i < FAULTS_HASH; i++) {
@@ -156,6 +160,7 @@ static struct remote_context *__alloc_remote_context(int nid, int tgid, bool rem
 
 	INIT_RADIX_TREE(&rc->pages, GFP_ATOMIC);
 
+	PSPRINTK("ADDED: [%s] Leave *__alloc_remote_context\n", __func__);
 	return rc;
 }
 
@@ -895,6 +900,7 @@ static void __process_remote_works(void)
                }
 		if (!req) continue;
 
+		PSPRINTK("ADDED: [%s] req->header.type: %d\n", __func__, req->header.type);
 		switch (req->header.type) {
 		case PCN_KMSG_TYPE_REMOTE_PAGE_REQUEST:
 			WARN_ON_ONCE("Not implemented yet!");
@@ -935,6 +941,7 @@ static void __process_remote_works(void)
  */
 static int __request_clone_remote(int dst_nid, struct task_struct *tsk, void __user *uregs)
 {
+	PSPRINTK("ADDED: [%s]\n", __func__);
 	struct mm_struct *mm = get_task_mm(tsk);
 	clone_request_t *req;
 	int ret;
@@ -986,13 +993,21 @@ static int __request_clone_remote(int dst_nid, struct task_struct *tsk, void __u
 	/* Register sets from userspace */
 	ret = copy_from_user(&req->arch.regsets, uregs,
 			regset_size(get_popcorn_node_arch(dst_nid)));
+	PSPRINTK("ADDED: [%s] get_popcorn_node_arch: %d\n"
+		, __func__, get_popcorn_node_arch(dst_nid));
+	PSPRINTK("ADDED: [%s] regset_size: %d\n"
+		, __func__, regset_size(get_popcorn_node_arch(dst_nid)));
+	PSPRINTK("ADDED: [%s] ret=copy_from_user: %d\n", __func__, ret);
 	BUG_ON(ret != 0);
 	save_thread_info(&req->arch);
 
+	PSPRINTK("ADDED: [%s] Entering pcn_kmsg_post\n", __func__);
 	ret = pcn_kmsg_post(PCN_KMSG_TYPE_TASK_MIGRATE, dst_nid, req, sizeof(*req));
+	PSPRINTK("ADDED: [%s] ret=pcn_kmsg_post: %d\n", __func__, ret);
 
 out:
 	mmput(mm);
+	PSPRINTK("ADDED: [%s] Leaving\n", __func__);
 	return ret;
 }
 
@@ -1000,6 +1015,7 @@ static int __do_migration(struct task_struct *tsk, int dst_nid, void __user *ure
 {
 	int ret;
 	struct remote_context *rc;
+	PSPRINTK("ADDED: [%s] In __do_migration function\n", __func__);
 
 	/* Won't to allocate this object in a spinlock-ed area */
 	rc = __alloc_remote_context(my_nid, tsk->tgid, false);
@@ -1026,9 +1042,13 @@ static int __do_migration(struct task_struct *tsk, int dst_nid, void __user *ure
 	 */
 	tsk->remote = get_task_remote(tsk);
 
+	PSPRINTK("ADDED: [%s] Entering __request_clone_remote, dst_nid: %d\n"
+		, __func__, dst_nid);
 	ret = __request_clone_remote(dst_nid, tsk, uregs);
+	PSPRINTK("ADDED: [%s] ret=__request_clone_remote: %d\n", __func__, ret);
 	if (ret) return ret;
 
+	PSPRINTK("ADDED: [%s] Entering __process_remote_works\n", __func__);
 	__process_remote_works();
 	return 0;
 }
@@ -1043,12 +1063,19 @@ static int __do_migration(struct task_struct *tsk, int dst_nid, void __user *ure
  */
 int process_server_do_migration(struct task_struct *tsk, unsigned int dst_nid, void __user *uregs)
 {
+	PSPRINTK("ADDED: [%s] In process_server_do_migration function.\n", __func__);
+	PSPRINTK("ADDED: [%s] task_struct *tsk->CONFIG_POPCORN:\n", __func__);
+	PSPRINTK("ADDED: [%s] peer_nid: %d, remote_pid: %d, origin_pid: %d\n", __func__, tsk->peer_nid, tsk->remote_nid, tsk->origin_nid);
+	PSPRINTK("ADDED: [%s] peer_pir: %d, remote_pid: %d, origin_pid: %d\n", __func__, tsk->peer_pid, tsk->remote_pid, tsk->origin_pid);
 	int ret = 0;
 
 	if (tsk->origin_nid == dst_nid) {
+		PSPRINTK("ADDED: [%s] origin_nid == dst_nid, back migration\n", __func__);
 		ret = __do_back_migration(tsk, dst_nid, uregs);
 	} else {
+		PSPRINTK("ADDED: [%s] origin_nid != dst_nid, start migration\n", __func__);
 		ret = __do_migration(tsk, dst_nid, uregs);
+		PSPRINTK("ADDED: [%s] __do_migration function complete! ret value: %d\n", __func__, ret);
 		if (ret) {
 			tsk->remote = NULL;
 			tsk->remote_pid = tsk->remote_nid = -1;
