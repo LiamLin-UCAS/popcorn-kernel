@@ -5050,6 +5050,7 @@ SYSCALL_DEFINE2(popcorn_get_node_info, int *, _my_nid, struct popcorn_node_info 
 SYSCALL_DEFINE2(popcorn_migrate, int, nid, void __user *, uregs)
 {
 	int ret;
+	PSPRINTK("ADDED: popcorn migrate triggered by pid %d, nid %d", current->pid, nid);
 	PSPRINTK("####### MIGRATE [%d] to %d\n", current->pid, nid);
 
 	if (nid == -1) {
@@ -5072,6 +5073,7 @@ SYSCALL_DEFINE2(popcorn_migrate, int, nid, void __user *, uregs)
 		return -EAGAIN;
 	}
 
+	PSPRINTK("ADDED: nid check complete. Start migrate to nid[%d]", nid);
 	ret = process_server_do_migration(current, nid, uregs);
 	if (ret) return ret;
 
