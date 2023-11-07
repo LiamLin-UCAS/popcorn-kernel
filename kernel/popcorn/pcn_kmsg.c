@@ -101,16 +101,20 @@ EXPORT_SYMBOL(pcn_kmsg_send);
 
 int pcn_kmsg_post(enum pcn_kmsg_type type, int to, void *msg, size_t size)
 {
+	PSPRINTK("ADDED: [%s]\n", __func__);
+	PSPRINTK("ADDED: [%s] pcn_kmsg_type: %d, to: %d\n", __func__, type, to);
 	int ret;
 	if ((ret = __build_and_check_msg(type, to, msg, size))) return ret;
 
 	account_pcn_message_sent(msg);
+	PSPRINTK("ADDED: [%s] Leaving\n", __func__);
 	return transport->post(to, msg, size);
 }
 EXPORT_SYMBOL(pcn_kmsg_post);
 
 void *pcn_kmsg_get(size_t size)
 {
+	PSPRINTK("ADDED: [%s]\n", __func__);
 	if (transport && transport->get)
 		return transport->get(size);
 	return kmalloc(size, GFP_KERNEL);
