@@ -99,10 +99,92 @@ int pcn_kmsg_send(enum pcn_kmsg_type type, int to, void *msg, size_t size)
 }
 EXPORT_SYMBOL(pcn_kmsg_send);
 
+static const char* pcn_kmsg_type_to_string(enum pcn_kmsg_type type) {
+    switch (type) {
+        case PCN_KMSG_TYPE_NODE_INFO:
+            return "PCN_KMSG_TYPE_NODE_INFO";
+        case PCN_KMSG_TYPE_STAT_START:
+            return "PCN_KMSG_TYPE_STAT_START";
+        case PCN_KMSG_TYPE_TASK_MIGRATE:
+            return "PCN_KMSG_TYPE_TASK_MIGRATE";
+        case PCN_KMSG_TYPE_TASK_MIGRATE_BACK:
+            return "PCN_KMSG_TYPE_TASK_MIGRATE_BACK";
+        case PCN_KMSG_TYPE_TASK_PAIRING:
+            return "PCN_KMSG_TYPE_TASK_PAIRING";
+        case PCN_KMSG_TYPE_TASK_EXIT_ORIGIN:
+            return "PCN_KMSG_TYPE_TASK_EXIT_ORIGIN";
+        case PCN_KMSG_TYPE_TASK_EXIT_REMOTE:
+            return "PCN_KMSG_TYPE_TASK_EXIT_REMOTE";
+        case PCN_KMSG_TYPE_VMA_INFO_REQUEST:
+            return "PCN_KMSG_TYPE_VMA_INFO_REQUEST";
+        case PCN_KMSG_TYPE_VMA_INFO_RESPONSE:
+            return "PCN_KMSG_TYPE_VMA_INFO_RESPONSE";
+        case PCN_KMSG_TYPE_VMA_OP_REQUEST:
+            return "PCN_KMSG_TYPE_VMA_OP_REQUEST";
+        case PCN_KMSG_TYPE_VMA_OP_RESPONSE:
+            return "PCN_KMSG_TYPE_VMA_OP_RESPONSE";
+        case PCN_KMSG_TYPE_REMOTE_PAGE_REQUEST:
+            return "PCN_KMSG_TYPE_REMOTE_PAGE_REQUEST";
+        case PCN_KMSG_TYPE_REMOTE_PAGE_RESPONSE:
+            return "PCN_KMSG_TYPE_REMOTE_PAGE_RESPONSE";
+        case PCN_KMSG_TYPE_REMOTE_PAGE_RESPONSE_SHORT:
+            return "PCN_KMSG_TYPE_REMOTE_PAGE_RESPONSE_SHORT";
+        case PCN_KMSG_TYPE_PAGE_INVALIDATE_REQUEST:
+            return "PCN_KMSG_TYPE_PAGE_INVALIDATE_REQUEST";
+        case PCN_KMSG_TYPE_PAGE_INVALIDATE_RESPONSE:
+            return "PCN_KMSG_TYPE_PAGE_INVALIDATE_RESPONSE";
+        case PCN_KMSG_TYPE_REMOTE_PAGE_FLUSH:
+            return "PCN_KMSG_TYPE_REMOTE_PAGE_FLUSH";
+        case PCN_KMSG_TYPE_REMOTE_PAGE_RELEASE:
+            return "PCN_KMSG_TYPE_REMOTE_PAGE_RELEASE";
+        case PCN_KMSG_TYPE_REMOTE_PAGE_FLUSH_ACK:
+            return "PCN_KMSG_TYPE_REMOTE_PAGE_FLUSH_ACK";
+        case PCN_KMSG_TYPE_FUTEX_REQUEST:
+            return "PCN_KMSG_TYPE_FUTEX_REQUEST";
+        case PCN_KMSG_TYPE_FUTEX_RESPONSE:
+            return "PCN_KMSG_TYPE_FUTEX_RESPONSE";
+        case PCN_KMSG_TYPE_STAT_END:
+            return "PCN_KMSG_TYPE_STAT_END";
+        case PCN_KMSG_TYPE_TEST_REQUEST:
+            return "PCN_KMSG_TYPE_TEST_REQUEST";
+        case PCN_KMSG_TYPE_TEST_RESPONSE:
+            return "PCN_KMSG_TYPE_TEST_RESPONSE";
+        case PCN_KMSG_TYPE_TEST_RDMA_REQUEST:
+            return "PCN_KMSG_TYPE_TEST_RDMA_REQUEST";
+        case PCN_KMSG_TYPE_TEST_RDMA_RESPONSE:
+            return "PCN_KMSG_TYPE_TEST_RDMA_RESPONSE";
+        case PCN_KMSG_TYPE_REMOTE_PROC_CPUINFO_REQUEST:
+            return "PCN_KMSG_TYPE_REMOTE_PROC_CPUINFO_REQUEST";
+        case PCN_KMSG_TYPE_REMOTE_PROC_CPUINFO_RESPONSE:
+            return "PCN_KMSG_TYPE_REMOTE_PROC_CPUINFO_RESPONSE";
+        case PCN_KMSG_TYPE_REMOTE_PROC_MEMINFO_REQUEST:
+            return "PCN_KMSG_TYPE_REMOTE_PROC_MEMINFO_REQUEST";
+        case PCN_KMSG_TYPE_REMOTE_PROC_MEMINFO_RESPONSE:
+            return "PCN_KMSG_TYPE_REMOTE_PROC_MEMINFO_RESPONSE";
+        case PCN_KMSG_TYPE_REMOTE_PROC_PS_REQUEST:
+            return "PCN_KMSG_TYPE_REMOTE_PROC_PS_REQUEST";
+        case PCN_KMSG_TYPE_REMOTE_PROC_PS_RESPONSE:
+            return "PCN_KMSG_TYPE_REMOTE_PROC_PS_RESPONSE";
+        case PCN_KMSG_TYPE_SYSCALL_FWD:
+            return "PCN_KMSG_TYPE_SYSCALL_FWD";
+        case PCN_KMSG_TYPE_SYSCALL_REP:
+            return "PCN_KMSG_TYPE_SYSCALL_REP";
+        case PCN_KMSG_TYPE_SIGNAL_FWD:
+            return "PCN_KMSG_TYPE_SIGNAL_FWD";
+        case PCN_KMSG_TYPE_SCHED_PERIODIC:
+            return "PCN_KMSG_TYPE_SCHED_PERIODIC";
+        case PCN_KMSG_TYPE_MAX:
+            return "PCN_KMSG_TYPE_MAX";
+        default:
+            return "Unknown enum value";
+    }
+}
+
 int pcn_kmsg_post(enum pcn_kmsg_type type, int to, void *msg, size_t size)
 {
 	PSPRINTK("ADDED: [%s]\n", __func__);
-	PSPRINTK("ADDED: [%s] pcn_kmsg_type: %d, to: %d\n", __func__, type, to);
+	PSPRINTK("ADDED: [%s] pcn_kmsg_type: %s, to: %d\n"
+		, __func__, pcn_kmsg_type_to_string(type), to);
 	int ret;
 	if ((ret = __build_and_check_msg(type, to, msg, size))) return ret;
 
