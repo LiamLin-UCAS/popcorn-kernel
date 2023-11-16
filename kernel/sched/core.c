@@ -7,7 +7,7 @@
  *  Copyright (C) 1991-2002  Linus Torvalds
  */
 #include "sched.h"
-#include <unistd.h>
+#include<linux/delay.h>
 
 #include <linux/nospec.h>
 
@@ -5051,7 +5051,7 @@ SYSCALL_DEFINE2(popcorn_get_node_info, int *, _my_nid, struct popcorn_node_info 
 SYSCALL_DEFINE2(popcorn_migrate, int, nid, void __user *, uregs)
 {
 	int ret;
-	sleep(120);
+	msleep(120*1000);
 	PSPRINTK("ADDED: popcorn migrate triggered by pid %d, nid %d\n", current->pid, nid);
 	PSPRINTK("####### MIGRATE [%d] to %d\n", current->pid, nid);
 
