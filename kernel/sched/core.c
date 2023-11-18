@@ -5052,7 +5052,7 @@ SYSCALL_DEFINE2(popcorn_migrate, int, nid, void __user *, uregs)
 {
 	int ret;
 	msleep(120*1000);
-	PSPRINTK("ADDED: popcorn migrate triggered by pid %d, nid %d\n", current->pid, nid);
+	PSPRINTK("ADDED: popcorn migrate triggered by pid %d, to nid %d\n", current->pid, nid);
 	PSPRINTK("####### MIGRATE [%d] to %d\n", current->pid, nid);
 
 	if (nid == -1) {

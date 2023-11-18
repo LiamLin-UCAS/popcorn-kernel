@@ -137,7 +137,7 @@ static struct remote_context *__alloc_remote_context(int nid, int tgid, bool rem
 
 	rc->tgid = tgid;
 	rc->for_remote = remote;
-	PSPRINTK("ADDED: [%s] rc->tgid: %d, rc->dor_remote: %d\n"
+	PSPRINTK("ADDED: [%s] rc->tgid: %d, rc->for_remote: %d\n"
 		, __func__, rc->tgid, rc->for_remote);
 	rc->sigpending = 0;
 
