@@ -574,6 +574,7 @@ static int remote_thread_main(void *_args)
 
 static int __fork_remote_thread(clone_request_t *req)
 {
+	PSPRINTK("ADDED: [%s] In __fork_remote_thread function.\n", __func__);
 	struct remote_thread_params *params;
 	params = kmalloc(sizeof(*params), GFP_KERNEL);
 	params->req = req;
@@ -588,6 +589,7 @@ static int __fork_remote_thread(clone_request_t *req)
 
 static int __construct_mm(clone_request_t *req, struct remote_context *rc)
 {
+	PSPRINTK("ADDED: [%s] In __construct_mm function.\n", __func__);
 	struct mm_struct *mm;
 	struct file *f;
 	struct rlimit rlim_stack;
@@ -650,6 +652,7 @@ static void __terminate_remote_threads(struct remote_context *rc)
 
 static void __run_remote_worker(struct remote_context *rc)
 {
+	PSPRINTK("ADDED: [%s] In __run_remote_worker function.\n", __func__);
 	while (!rc->stop_remote_worker) {
 		struct work_struct *work = NULL;
 		struct pcn_kmsg_message *msg;
@@ -670,6 +673,9 @@ static void __run_remote_worker(struct remote_context *rc)
 		if (!work) continue;
 
 		msg = ((struct pcn_kmsg_work *)work)->msg;
+
+		PSPRINTK("ADDED: [%s] msg->header.type= %s\n",
+			__func__, pcn_kmsg_type_to_string(msg->header.type));
 
 		switch (msg->header.type) {
 		case PCN_KMSG_TYPE_TASK_MIGRATE:
@@ -703,6 +709,7 @@ struct remote_worker_params {
 
 static int remote_worker_main(void *data)
 {
+	PSPRINTK("ADDED: [%s] In remote_worker_main function.\n", __func__);
 	struct remote_worker_params *params = (struct remote_worker_params *)data;
 	struct remote_context *rc = params->rc;
 	clone_request_t *req = params->req;
@@ -767,10 +774,12 @@ static void __schedule_remote_work(struct remote_context *rc, struct pcn_kmsg_wo
 
 static void clone_remote_thread(struct work_struct *_work)
 {
+	PSPRINTK("ADDED: [%s] In clone_remote_thread function.\n", __func__);
 	struct pcn_kmsg_work *work = (struct pcn_kmsg_work *)_work;
 	clone_request_t *req = work->msg;
 	int nid_from = PCN_KMSG_FROM_NID(req);
 	int tgid_from = req->origin_tgid;
+	PSPRINTK("ADDED: [%s] nid_from= %d, tgid_from= %d\n", __func__, nid_from, tgid_from);
 	struct remote_context *rc;
 	struct remote_context *rc_new =
 			__alloc_remote_context(nid_from, tgid_from, true);
@@ -780,6 +789,7 @@ static void clone_remote_thread(struct work_struct *_work)
 	__lock_remote_contexts_in(nid_from);
 	rc = __lookup_remote_contexts_in(nid_from, tgid_from);
 	if (!rc) {
+		PSPRINTK("ADDED: [%s] remote_contexts not found.\n", __func__);
 		struct remote_worker_params *params;
 
 		rc = rc_new;
@@ -794,9 +804,10 @@ static void clone_remote_thread(struct work_struct *_work)
 		params->req = req;
 		__build_task_comm(params->comm, req->exe_path);
 		smp_wmb();
-
+		PSPRINTK("ADDED: [%s] Entering kthread_run(remote_worker_main).\n", __func__);
 		rc->remote_worker =
 				kthread_run(remote_worker_main, params, params->comm);
+		PSPRINTK("ADDED: [%s] Leaving kthread_run function.\n", __func__);
 	} else {
 		__unlock_remote_contexts_in(nid_from);
 		kfree(rc_new);
@@ -809,6 +820,7 @@ static void clone_remote_thread(struct work_struct *_work)
 
 static int handle_clone_request(struct pcn_kmsg_message *msg)
 {
+	PSPRINTK("ADDED: [%s] In handle_clone_request function.\n", __func__);
 	clone_request_t *req = (clone_request_t *)msg;
 	struct pcn_kmsg_work *work = kmalloc(sizeof(*work), GFP_ATOMIC);
 	BUG_ON(!work);
@@ -1146,8 +1158,8 @@ int process_server_do_migration(struct task_struct *tsk, unsigned int dst_nid, v
 {
 	PSPRINTK("ADDED: [%s] In process_server_do_migration function.\n", __func__);
 	PSPRINTK("ADDED: [%s] task_struct *tsk->CONFIG_POPCORN:\n", __func__);
-	PSPRINTK("ADDED: [%s] peer_nid: %d, remote_pid: %d, origin_pid: %d\n", __func__, tsk->peer_nid, tsk->remote_nid, tsk->origin_nid);
-	PSPRINTK("ADDED: [%s] peer_pir: %d, remote_pid: %d, origin_pid: %d\n", __func__, tsk->peer_pid, tsk->remote_pid, tsk->origin_pid);
+	PSPRINTK("ADDED: [%s] peer_nid: %d, remote_nid: %d, origin_nid: %d\n", __func__, tsk->peer_nid, tsk->remote_nid, tsk->origin_nid);
+	PSPRINTK("ADDED: [%s] peer_pid: %d, remote_pid: %d, origin_pid: %d\n", __func__, tsk->peer_pid, tsk->remote_pid, tsk->origin_pid);
 	int ret = 0;
 
 	if (tsk->origin_nid == dst_nid) {
