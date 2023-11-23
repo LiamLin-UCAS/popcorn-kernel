@@ -663,6 +663,7 @@ static int __fork_remote_thread(clone_request_t *req)
 	/* The loop deals with signals between concurrent migration */
 	while (kernel_thread(remote_thread_main, params,
 					CLONE_THREAD | CLONE_SIGHAND | SIGCHLD) < 0) {
+		PSPRINTK("ADDED: [%s] kernel_thread(remote_thread_main) < 0\n", __func__);
 		schedule();
 	}
 	return 0;
