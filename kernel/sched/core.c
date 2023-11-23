@@ -5051,7 +5051,6 @@ SYSCALL_DEFINE2(popcorn_get_node_info, int *, _my_nid, struct popcorn_node_info 
 SYSCALL_DEFINE2(popcorn_migrate, int, nid, void __user *, uregs)
 {
 	int ret;
-	msleep(120*1000);
 	PSPRINTK("ADDED: popcorn migrate triggered by pid %d, to nid %d\n", current->pid, nid);
 	PSPRINTK("####### MIGRATE [%d] to %d\n", current->pid, nid);
 
