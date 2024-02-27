@@ -79,6 +79,7 @@ static inline int __build_and_check_msg(enum pcn_kmsg_type type, int to, struct 
 	BUG_ON(type < 0 || type >= PCN_KMSG_TYPE_MAX);
 	BUG_ON(size > PCN_KMSG_MAX_SIZE);
 	BUG_ON(to < 0 || to >= MAX_POPCORN_NODES);
+	printk("ADDED: to: %d, my_nid: %d\n", to, my_nid);
 	BUG_ON(to == my_nid);
 #endif
 
