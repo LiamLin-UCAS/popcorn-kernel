@@ -183,7 +183,8 @@ long syscall_redirect(unsigned long nr, struct pt_regs *regs)
 
 		return -1;
 	} else {
-		ret = pcn_kmsg_post(PCN_KMSG_TYPE_SYSCALL_FWD, 0,
+              printk("ADDED: Call here and set to: 0")
+		ret = pcn_kmsg_post(PCN_KMSG_TYPE_SYSCALL_FWD, 0, //possible error here
 				req,sizeof(*req));
 		rep = wait_at_station(ws);
 		ret = rep->ret;
